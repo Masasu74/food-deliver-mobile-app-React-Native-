@@ -9,7 +9,7 @@ const SignIn = () => {
   const [form,setForm]=useState({email:'',password:''});
 
   const submit=async()=>{
-    if(!form.email || !form.password) Alert.alert('Error','Please enter valid email & password');
+    if(!form.email || !form.password) return Alert.alert('Error','Please enter valid email & password');
 
     setIsSubmitting(true)
 
@@ -30,20 +30,23 @@ const SignIn = () => {
 
       <CustomInput
         placeholder="Enter your email"
-        value={""}
-        onChangeText={(text) => {}}
+        value={form.email}
+        onChangeText={(text) => setForm((prev)=>({...prev,email:text}))}
         label="Email"
         keyboardType="email-address"
       />
        <CustomInput
         placeholder="Enter your password"
-        value={""}
-        onChangeText={(text) => {}}
+        value={form.password}
+        onChangeText={(text) => setForm((prev)=>({...prev,password:text}))}
         label="Password"
         secureTextEntry={true}
       />
       <CustomButton 
-      title="Sign In"/>
+      title="Sign In"
+      isLoading={isSubmitting}
+      onPress={submit}
+      />
 
       <View className="flex justify-center mt-5 flex-row gap-2">
         <Text className="base-regular text-gray-100">

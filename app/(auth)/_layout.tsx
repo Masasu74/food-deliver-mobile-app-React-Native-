@@ -35,7 +35,7 @@ const _layout = () => {
           />
           <Image source={images.logo} className="self-center size-48 absolute -bottom-16 z-10"/>
         </View>
-       <Slot />
+       <Slot />  
       </ScrollView>
      
     </KeyboardAvoidingView>

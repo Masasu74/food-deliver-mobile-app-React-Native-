@@ -1,19 +1,46 @@
 import { CreateUserParams, SignInParams } from "@/type";
-import { Account, Avatars, Client, Databases, ID, Query } from "react-native-appwrite";
+import { Account, Avatars, Client, Databases, ID, Query, Storage } from "react-native-appwrite";
+
+// Validate environment variables
+const validateEnvVars = () => {
+    const endpoint = process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT;
+    const projectId = process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID;
+    
+    console.log('🔧 Environment variables check:');
+    console.log('Endpoint:', endpoint);
+    console.log('Project ID:', projectId);
+    
+    if (!endpoint) {
+        throw new Error('EXPO_PUBLIC_APPWRITE_ENDPOINT is not defined in environment variables');
+    }
+    
+    if (!projectId) {
+        throw new Error('EXPO_PUBLIC_APPWRITE_PROJECT_ID is not defined in environment variables');
+    }
+    
+    return { endpoint, projectId };
+};
+
+const { endpoint, projectId } = validateEnvVars();
 
 export const appwriteConfig = {
-    endpoint: process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT!,
+    endpoint,
     platform: "com.jsm.foodordering",
-    projectId: process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID!,
+    projectId,
     databaseId: '68a5b4b30027ed55524e',
     bucketId:'68ac0fb6001d3f84a83c',
     userCollectionId: '68a5b55a002563310afe',
     categoriesCollectionId:'68ac0a5a0013de52a0ea',
     menuCollectionId:'68ac0b7b0024fa6f11a9',
     customizationsCollectionId:'68ac0d100029291415eb',
-    menuCustomizationCollectionId:'68ac0e7b002064aa6f53',
-
+    menuCustomizationsCollectionId:'68ac0e7b002064aa6f53',
 }
+
+console.log('🚀 Initializing Appwrite client with config:', {
+    endpoint: appwriteConfig.endpoint,
+    projectId: appwriteConfig.projectId,
+    platform: appwriteConfig.platform
+});
 
 export const client = new Client();
 
@@ -24,6 +51,7 @@ client
 
 export const account = new Account(client);
 export const databases = new Databases(client);
+export const storage = new Storage(client);
 const avatars = new Avatars(client);
 
 export const createUser = async ({ email, password, name }: CreateUserParams) => {
@@ -44,6 +72,7 @@ export const createUser = async ({ email, password, name }: CreateUserParams) =>
         );
         
     } catch (e) {
+        console.error('Error creating user:', e);
         throw new Error(e as string)
     }
 }
@@ -52,6 +81,7 @@ export const signIn=async({email,password}:SignInParams)=>{
 try {
     const session=await account.createEmailPasswordSession(email,password)   
 } catch (e) {
+    console.error('Error signing in:', e);
     throw new Error(e as string)
 }
 }
@@ -73,3 +103,31 @@ export const getCurrentUser=async()=>{
         throw new Error(e as string)
     }
 }
+
+// Add a function to test the connection
+export const testConnection = async () => {
+    try {
+        console.log('🔍 Testing connection to Appwrite...');
+        console.log('Database ID:', appwriteConfig.databaseId);
+        console.log('Categories Collection ID:', appwriteConfig.categoriesCollectionId);
+        
+        // Try to list documents from a collection to test the connection
+        const result = await databases.listDocuments(
+            appwriteConfig.databaseId,
+            appwriteConfig.categoriesCollectionId,
+            []
+        );
+        
+        console.log('✅ Appwrite connection successful');
+        console.log('Found documents:', result.documents.length);
+        return true;
+    } catch (error) {
+        console.error('❌ Appwrite connection failed:', error);
+        console.error('Error details:', {
+            message: (error as any).message,
+            code: (error as any).code,
+            response: (error as any).response
+        });
+        throw error;
+    }
+};

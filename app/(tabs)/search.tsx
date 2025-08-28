@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { View, Text, FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import cn from 'clsx'
+import MenuCard from "@/components/MenuCard";
 const search = () => {
   const { category, query } = useLocalSearchParams<{
     query: string;
@@ -34,7 +35,7 @@ const search = () => {
            
           return (
             <View className={cn("flex-1 max-w-[48%]",!isFirstRightColItem ? 'mt-10':'mt-0')}>
-              <Text>Menu Card</Text>
+              <MenuCard item={item as MenuItem}/>
             </View>
           );
         }}

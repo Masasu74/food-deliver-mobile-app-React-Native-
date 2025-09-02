@@ -1,6 +1,7 @@
 import CartButton from "@/components/CartButton";
 import Filter from "@/components/Filter";
 import MenuCard from "@/components/MenuCard";
+import NoData from "@/components/NoData";
 import SearchBar from "@/components/SearchBar";
 import { getCategories, getMenu } from "@/lib/appwrite";
 import useAppwrite from "@/lib/useAppwrite";
@@ -60,7 +61,7 @@ const search = () => {
               <Filter categories={categories! }/>
           </View>
         )}
-        ListEmptyComponent={()=>!loading && <Text>No Results</Text>}
+        ListEmptyComponent={()=>!loading && <NoData title="Nothing matched your search" description="Try a different search term or check for typos."/>}
       />
     </SafeAreaView>
   );

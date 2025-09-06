@@ -5,29 +5,48 @@ import NoData from "@/components/NoData";
 import SearchBar from "@/components/SearchBar";
 import { getCategories, getMenu } from "@/lib/appwrite";
 import useAppwrite from "@/lib/useAppwrite";
+import { Category, MenuItem } from "@/type";
 import cn from 'clsx';
-import { useLocalSearchParams } from "expo-router";
-import { useEffect } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useMemo } from "react";
 import { FlatList, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 const search = () => {
-  const { category, query } = useLocalSearchParams<{
+  const { category, query, categoryName } = useLocalSearchParams<{
     query: string;
     category: string;
+    categoryName: string;
   }>();
+  // Memoize params to prevent unnecessary re-renders
+  const menuParams = useMemo(() => ({
+    category: category || "",
+    query: query || "",
+    limit: 6,
+  }), [category, query]);
+
   const { data, refetch, loading } = useAppwrite({
     fn: getMenu,
-    params: {
-      category,
-      query,
-      limit: 6,
-    },
+    params: menuParams,
   });
   const { data: categories } = useAppwrite({ fn: getCategories });
 
+  // Function to find category ID from name
+  const getCategoryIdFromName = (name: string) => {
+    if (!categories || !name) return null;
+    const foundCategory = categories.find(cat => cat.name === name);
+    return foundCategory?.$id || null;
+  };
+
   useEffect(() => {
-    refetch({ category, query, limit: 6 });
-  }, [category, query]);
+    // Auto-select filter when categoryName is provided
+    if (categoryName && !category) {
+      const categoryId = getCategoryIdFromName(categoryName);
+      if (categoryId) {
+        // Set the category parameter to select the filter
+        router.setParams({ category: categoryId, categoryName: undefined });
+      }
+    }
+  }, [categoryName, category, categories]);
 
   return (
     <SafeAreaView className="bg-white h-full">
@@ -38,7 +57,7 @@ const search = () => {
            
           return (
             <View className={cn("flex-1 max-w-[48%]",!isFirstRightColItem ? 'mt-10':'mt-0')}>
-              <MenuCard item={item as MenuItem}/>
+              <MenuCard item={item as unknown as MenuItem}/>
             </View>
           );
         }}
@@ -58,7 +77,7 @@ const search = () => {
                 <CartButton/>
               </View>
             <SearchBar/>
-              <Filter categories={categories! }/>
+              <Filter categories={categories as unknown as Category[]}/>
           </View>
         )}
         ListEmptyComponent={()=>!loading && <NoData title="Nothing matched your search" description="Try a different search term or check for typos."/>}

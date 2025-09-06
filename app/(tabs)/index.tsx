@@ -1,25 +1,42 @@
+import CartButton from "@/components/CartButton";
 import { images, offers } from "@/constants";
+import useAuthStore from "@/store/auth.store";
+import cn from "clsx";
+import { router } from "expo-router"; // Add this import
 import { Fragment } from "react";
 import {
-  Button,
   FlatList,
   Image,
   Pressable,
-  ScrollView,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import cn from "clsx";
-import CartButton from "@/components/CartButton";
-import * as Sentry from '@sentry/react-native'
-import useAuthStore from "@/store/auth.store";
 
 export default function Index() {
   const{user}=useAuthStore();
   console.log("USER:",JSON.stringify(user,null,2));
   
+  const getSearchParams = (title: string) => {
+    const titleMap: { [key: string]: { categoryName?: string } } = {
+      "SUMMER COMBO": { categoryName: "Burgers" },
+      "BURGER BASH": { categoryName: "Burgers" },
+      "PIZZA PARTY": { categoryName: "Pizzas" },
+      "BURRITO DELIGHT": { categoryName: "Burritos" },
+    };
+    
+    return titleMap[title] || {};
+  };
+
+  const handleOfferPress = (title: string) => {
+    const params = getSearchParams(title);
+    router.push({
+      pathname: "/(tabs)/search",
+      params: params
+    });
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-white">
 
@@ -36,6 +53,7 @@ export default function Index() {
                 )}
                 android_ripple={{ color: "#fffff22" }}
                 style={{ backgroundColor: item.color }}
+                onPress={() => handleOfferPress(item.title)}
               >
                 {({ pressed }) => (
                   <Fragment>

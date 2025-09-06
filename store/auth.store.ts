@@ -1,6 +1,7 @@
 import { getCurrentUser } from '@/lib/appwrite';
 import { User } from '@/type';
-import { create } from 'zustand'
+import { create } from 'zustand';
+
 type AuthState = {
     isAuthenticated: boolean;
     user: User | null;
@@ -13,34 +14,52 @@ type AuthState = {
     fetchAuthenticatedUser: () => Promise<void>;
 }
 
-
-const useAuthStore = create<AuthState>((set) => ({
+const useAuthStore = create<AuthState>((set, get) => ({
     isAuthenticated: false,
     user: null,
     isLoading: true,
 
-    setIsAuthenticated: (value) => set({ isAuthenticated: value }),
+    setIsAuthenticated: (value: boolean) => {
+        set({ isAuthenticated: value });
+    },
 
-    setUser: (user) => set({ user }),
-    setLoading: (value) => set({ isLoading: value }),
+    setUser: (user: User | null) => {
+        set({ user });
+    },
+
+    setLoading: (value: boolean) => {
+        set({ isLoading: value });
+    },
 
     fetchAuthenticatedUser: async () => {
-        set({ isLoading: true });
-
         try {
+            set({ isLoading: true });
+
             const user = await getCurrentUser();
 
-            if (user) set({ isAuthenticated: true, user: user as User })
-            else set({ isAuthenticated: false, user: null });
+            if (user && typeof user === 'object') {
+                set({ 
+                    isAuthenticated: true, 
+                    user: user as unknown as User,
+                    isLoading: false 
+                });
+            } else {
+                set({ 
+                    isAuthenticated: false, 
+                    user: null,
+                    isLoading: false 
+                });
+            }
 
         } catch (e) {
             console.log('fetchAuthenticatedUser error', e);
-            set({ isAuthenticated: false, user: null })
-        } finally {
-            set({ isLoading: false });
+            set({ 
+                isAuthenticated: false, 
+                user: null,
+                isLoading: false 
+            });
         }
-
     },
-}))
+}));
 
-export default useAuthStore
+export default useAuthStore;

@@ -1,4 +1,5 @@
- import { Models } from "react-native-appwrite";
+ import { ImageSourcePropType } from "react-native";
+import { Models } from "react-native-appwrite";
 
 export interface MenuItem extends Models.Document {
     name: string;
